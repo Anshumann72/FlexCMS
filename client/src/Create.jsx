@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import Title from "./Title";
 
 const Create = () => {
   const [tableName, setTableName] = useState("");
@@ -23,7 +24,7 @@ const Create = () => {
 
   const handleCreate = async () => {
     try {
-      const response = await axios.post("http://localhost:5173/create-entity", {
+      const response = await axios.post("http://localhost:3000/create-entity", {
         entityName: tableName,
         attributes: fields,
       });
@@ -37,6 +38,7 @@ const Create = () => {
 
   return (
     <div>
+      <Title />
       <section className="p-6 dark:bg-gray-100 dark:text-gray-900">
         <form
           noValidate=""

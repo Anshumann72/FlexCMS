@@ -60,27 +60,54 @@ app.get("/get-entity/:entityName", async (req, res) => {
   }
 });
 
-// Read Entity Endpoint
-app.get("/get-entity/:entityName", async (req, res) => {
-  const { entityName } = req.params;
+// // Read Entity Endpoint
+// app.get("/get-entity/:entityName", async (req, res) => {
+//   const { entityName } = req.params;
 
-  try {
-    // Construct and execute the SQL query to fetch data from the specified table
-    const result = await pool.query(`SELECT * FROM ${entityName}`);
-    res.status(200).json(result.rows);
-  } catch (error) {
-    console.error("Error retrieving entity:", error);
-    res.status(500).send("Error retrieving entity");
-  }
-});
+//   try {
+//     // Construct and execute the SQL query to fetch data from the specified table
+//     const result = await pool.query(`SELECT * FROM ${entityName}`);
+//     res.status(200).json(result.rows);
+//   } catch (error) {
+//     console.error("Error retrieving entity:", error);
+//     res.status(500).send("Error retrieving entity");
+//   }
+// });
 
 // Update Entity Endpoint
-app.put("/update-entity/:entityName/:id", async (req, res) => {
-  const { entityName, id } = req.params;
+// app.put("/update-entity/:entityName/:id", async (req, res) => {
+//   const { entityName, id } = req.params;
+//   const newData = req.body;
+
+//   let updateQuery = `UPDATE ${entityName} SET`;
+
+//   Object.entries(newData).forEach(([key, value], index) => {
+//     if (index !== 0) {
+//       updateQuery += ",";
+//     }
+//     updateQuery += ` ${key}='${value}'`;
+//   });
+
+//   updateQuery += ` WHERE id=${id}`;
+
+//   try {
+//     await pool.query(updateQuery);
+//     res.status(200).send("Entity updated successfully");
+//   } catch (error) {
+//     console.error("Error updating entity:", error);
+//     res.status(500).send("Error updating entity");
+//   }
+// });
+
+// Update Entity Endpoint
+app.put("/update-entity/:entityName", async (req, res) => {
+  const { entityName } = req.params;
+  const { id } = req.body;
   const newData = req.body;
 
   let updateQuery = `UPDATE ${entityName} SET`;
 
+  // Construct SET clause for update query
   Object.entries(newData).forEach(([key, value], index) => {
     if (index !== 0) {
       updateQuery += ",";
@@ -88,6 +115,7 @@ app.put("/update-entity/:entityName/:id", async (req, res) => {
     updateQuery += ` ${key}='${value}'`;
   });
 
+  // Add WHERE clause to specify the record to update
   updateQuery += ` WHERE id=${id}`;
 
   try {
@@ -100,11 +128,11 @@ app.put("/update-entity/:entityName/:id", async (req, res) => {
 });
 
 // Delete Entity Endpoint
-app.delete("/delete-entity/:entityName/:id", async (req, res) => {
-  const { entityName, id } = req.params;
+app.delete("/delete-entity/:entityName", async (req, res) => {
+  const { entityName } = req.params;
 
   try {
-    await pool.query(`DELETE FROM ${entityName} WHERE id=${id}`);
+    await pool.query(`DROP TABLE IF EXISTS ${entityName}`);
     res.status(200).send("Entity deleted successfully");
   } catch (error) {
     console.error("Error deleting entity:", error);
@@ -173,6 +201,42 @@ app.post("/insert-data/:tableName", async (req, res) => {
   } catch (error) {
     console.error("Error inserting data:", error);
     res.status(500).send("Error inserting data");
+  }
+});
+
+// Insert data into a table Endpoint
+app.post("/add-entity/:tableName", async (req, res) => {
+  const { tableName } = req.params;
+  const newData = req.body;
+
+  // Extract column names from the newData object
+  const columns = Object.keys(newData).join(", ");
+  // Extract values from the newData object
+  const values = Object.values(newData)
+    .map((value) => (typeof value === "string" ? `'${value}'` : value))
+    .join(", ");
+
+  try {
+    // Query to insert data into the specified table
+    const query = `INSERT INTO ${tableName} (${columns}) VALUES (${values});`;
+    await pool.query(query);
+    res.status(200).send("Data inserted successfully");
+  } catch (error) {
+    console.error("Error inserting data:", error);
+    res.status(500).send("Error inserting data");
+  }
+});
+
+// Read Entity Endpoint to get all data of a table
+app.get("/get-entity/:entityName", async (req, res) => {
+  const { entityName } = req.params;
+
+  try {
+    const result = await pool.query(`SELECT * FROM ${entityName}`);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error retrieving entity:", error);
+    res.status(500).send("Error retrieving entity");
   }
 });
 
